@@ -31,13 +31,13 @@ function setLoading(loading: boolean): void {
   element('cancel-load').hidden = !loading;
   element('loading-state').hidden = !loading;
   element('source-form').setAttribute('aria-busy', String(loading));
-  if (loading) {
-    element('empty-state').hidden = true;
-    element('workspace').hidden = true;
-  } else {
-    element('empty-state').hidden = player.loaded;
-    element('workspace').hidden = !player.loaded;
-  }
+  element('landing-view').hidden = player.loaded || loading;
+  element('workspace').hidden = !player.loaded || loading;
+}
+
+function focusRecording(): void {
+  element('recording-title').focus({ preventScroll: true });
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
 function cancelRequest(): void {
@@ -82,6 +82,7 @@ async function openSource(
     if (id === requestId) {
       controller = undefined;
       setLoading(false);
+      if (player.loaded) focusRecording();
     }
   }
 }
@@ -94,6 +95,7 @@ function openDemo(selection = 1, time = 0, push = true): void {
   setLoading(false);
   if (push) history.pushState(null, '', player.link(time));
   else history.replaceState(null, '', player.link(time));
+  focusRecording();
 }
 
 function restoreLocation(): void {
@@ -210,6 +212,20 @@ element('copy-example').addEventListener('click', () => {
     element('example-status').textContent = copied
       ? 'Example copied. Replace the video URL and timestamps with your recording.'
       : 'Automatic copy is unavailable. Select the example text and copy it manually.';
+  });
+});
+element('copy-skill-command').addEventListener('click', () => {
+  const command = element('skill-install-command').textContent?.trim();
+  const status = element('skill-install-status');
+  if (!command) {
+    status.textContent =
+      'The install command is unavailable. Open the skill instructions instead.';
+    return;
+  }
+  void copyText(command).then((copied) => {
+    status.textContent = copied
+      ? 'Command copied.'
+      : 'Automatic copy is unavailable. Select the command and copy it manually.';
   });
 });
 for (const button of document.querySelectorAll<HTMLButtonElement>(

@@ -1,0 +1,64 @@
+:root {
+  --media-surface: #201f1d;
+  --media-ink: #eee9e1;
+  --media-muted: #b6aea3;
+  --media-accent: #d89575;
+  --media-line: #61594f;
+}
+
+:root[data-color-mode] {
+  --fgColor-default: light-dark(#2b2926, #eee9e1);
+  --fgColor-muted: light-dark(#6b645b, #b6aea3);
+  --fgColor-disabled: light-dark(#8d857b, #8a8176);
+  --fgColor-onEmphasis: light-dark(#faf9f6, #201f1d);
+  --fgColor-accent: light-dark(#97482f, #d89575);
+  --bgColor-default: light-dark(#faf9f6, #201f1d);
+  --bgColor-muted: light-dark(#f1eee8, #292724);
+  --bgColor-inset: light-dark(#eae6df, #191816);
+  --bgColor-emphasis: light-dark(#2b2926, #eee9e1);
+  --bgColor-neutral-muted: light-dark(#e8e3db, #39352f);
+  --bgColor-accent-muted: light-dark(#f0e4dc, #3a2b23);
+  --bgColor-accent-emphasis: var(--fgColor-accent);
+  --borderColor-default: light-dark(#d6cfc5, #484239);
+  --borderColor-muted: light-dark(#e2dcd3, #3b3731);
+  --borderColor-neutral-muted: var(--borderColor-default);
+  --borderColor-accent-muted: light-dark(#c6a391, #805640);
+  --borderColor-accent-emphasis: var(--fgColor-accent);
+  --focus-outlineColor: var(--fgColor-accent);
+  --fgColor-danger: light-dark(#9f3029, #ee9b8e);
+  --bgColor-danger-muted: light-dark(#f6e8e3, #392a25);
+  --borderColor-danger-muted: light-dark(#cf9284, #92574b);
+  --borderColor-danger-emphasis: var(--fgColor-danger);
+  --control-borderColor-rest: light-dark(#92887b, #81776b);
+  --control-fgColor-disabled: var(--fgColor-disabled);
+  --control-bgColor-disabled: var(--bgColor-muted);
+  --control-borderColor-disabled: var(--borderColor-default);
+  --button-default-fgColor-rest: var(--fgColor-default);
+  --button-default-bgColor-rest: var(--bgColor-default);
+  --button-default-bgColor-hover: var(--bgColor-muted);
+  --button-default-bgColor-active: var(--bgColor-neutral-muted);
+  --button-default-bgColor-selected: var(--bgColor-neutral-muted);
+  --button-default-bgColor-disabled: var(--bgColor-muted);
+  --button-default-borderColor-rest: var(--borderColor-default);
+  --button-default-borderColor-hover: var(--control-borderColor-rest);
+  --button-default-borderColor-active: var(--control-borderColor-rest);
+  --button-default-borderColor-disabled: var(--borderColor-muted);
+  --button-default-shadow-resting: 0 1px 0 rgb(43 36 28 / 4%);
+  --button-default-shadow-inset: none;
+  --button-primary-fgColor-rest: var(--fgColor-onEmphasis);
+  --button-primary-iconColor-rest: var(--fgColor-onEmphasis);
+  --button-primary-bgColor-rest: var(--bgColor-emphasis);
+  --button-primary-bgColor-hover: light-dark(#464039, #d9d1c6);
+  --button-primary-bgColor-active: light-dark(#191816, #c6bbac);
+  --button-primary-borderColor-rest: var(--button-primary-bgColor-rest);
+  --button-primary-borderColor-hover: var(--button-primary-bgColor-hover);
+  --button-primary-borderColor-active: var(--button-primary-bgColor-active);
+  --button-primary-fgColor-disabled: var(--fgColor-muted);
+  --button-primary-bgColor-disabled: var(--bgColor-neutral-muted);
+  --button-primary-borderColor-disabled: var(--borderColor-default);
+  --button-primary-shadow-selected: none;
+  --shadow-inset: none;
+  --shadow-resting-small: 0 1px 0 rgb(43 36 28 / 5%);
+  --shadow-highlight: none;
+  --shadow-floating-large: 0 12px 36px rgb(25 22 18 / 24%);
+}

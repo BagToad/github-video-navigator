@@ -27,10 +27,11 @@
     <header class="site-header">
       <div class="header-inner">
         <a href="./" class="wordmark" aria-label="Video navigator home">
-          <span class="brand-mark" data-icon="player-skip-forward"></span>
+          <span class="brand-mark" aria-hidden="true"></span>
           <span>Video navigator</span>
         </a>
         <nav class="header-actions" aria-label="Main navigation">
+          <a class="btn make-own" id="make-your-own" href="./">Make your own</a>
           <button class="btn-link header-link" type="button" id="open-guide">
             <span data-icon="book"></span><span>Metadata guide</span>
           </button>
@@ -55,91 +56,12 @@
       </div>
     </header>
     <main id="main" class="page">
-      <section class="intro" aria-labelledby="page-title">
-        <h1 id="page-title">Watch the work. Follow the why.</h1>
-        <p>
-          GitHub recordings, clickable chapters, and agent decisions that follow
-          along.
-        </p>
-      </section>
-      <section class="source-section" aria-label="Open a GitHub recording">
-        <form id="source-form" class="source-form">
-          <label for="source-url">GitHub link</label>
-          <div class="source-input-row">
-            <div class="source-input-wrap">
-              <span data-icon="link"></span>
-              <input
-                class="form-control"
-                id="source-url"
-                name="url"
-                type="url"
-                placeholder="https://github.com/owner/repo/pull/123"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                aria-describedby="source-help"
-                required
-              />
-            </div>
-            <button
-              class="btn btn-primary open-button"
-              id="open-video"
-              type="submit"
-            >
-              <span>Open video</span><span data-icon="arrow-up-right"></span>
-            </button>
-            <button class="btn" id="cancel-load" type="button" hidden>
-              Cancel
-            </button>
-          </div>
-          <p id="source-help" class="helper-text">
-            Paste an issue, pull request, or comment link. No account required
-            for public recordings.
-          </p>
-        </form>
-        <details class="access-details" id="access-details">
-          <summary>
-            <span data-icon="lock"></span>
-            <span>GitHub access</span>
-            <span class="access-state" id="access-state">Optional</span>
-          </summary>
-          <div class="access-content">
-            <p>
-              A token can raise API limits and read private repositories. It is
-              sent only to <strong>api.github.com</strong>, held in memory, and
-              never saved or included in shared links.
-            </p>
-            <form id="token-form" autocomplete="off">
-              <label for="github-token">GitHub personal access token</label>
-              <div class="token-input-row">
-                <input
-                  class="form-control"
-                  id="github-token"
-                  type="password"
-                  autocomplete="off"
-                  autocapitalize="off"
-                  spellcheck="false"
-                  data-lpignore="true"
-                  data-1p-ignore
-                  aria-describedby="token-help token-status"
-                  placeholder="Enter a token for this tab"
-                />
-                <button class="btn" type="submit">Use token</button>
-                <button class="btn" type="button" id="clear-token" disabled>
-                  Clear token
-                </button>
-              </div>
-            </form>
-            <p class="helper-text" id="token-help">
-              Fine-grained tokens need read access to Issues and Pull requests
-              for the selected repository. Private media may still require a
-              local copy. Tokens do not bypass video-host download limits.
-            </p>
-            <p class="helper-text" id="token-status" role="status"></p>
-          </div>
-        </details>
-      </section>
-      <p id="load-status" class="load-status" role="status"></p>
+      <div class="load-feedback">
+        <p id="load-status" class="load-status" role="status"></p>
+        <button class="btn" id="cancel-load" type="button" hidden>
+          Cancel
+        </button>
+      </div>
       <div
         id="error-panel"
         class="notice error-notice"
@@ -160,50 +82,178 @@
           <div class="skeleton skeleton-note"></div>
         </div>
       </div>
-      <section
-        id="empty-state"
-        class="empty-state"
-        aria-label="Getting started"
-      >
-        <div class="demo-preview">
-          <img
-            src="./demo/poster.webp"
-            width="1280"
-            height="720"
-            alt="The built-in walkthrough shows how chapters and decisions align on a video timeline."
-            fetchpriority="high"
-          />
-          <button type="button" class="btn demo-launch" id="load-demo">
+      <div id="landing-view" class="landing-view">
+        <section class="intro" aria-labelledby="page-title">
+          <h1 id="page-title">More context. Still GitHub.</h1>
+          <p>
+            Chapters and agent reasoning for the issues, pull requests, and
+            comments you already use.
+          </p>
+          <p class="intro-detail">
+            Your video and hidden metadata stay together on GitHub, close to the
+            work. No separate account, login, or hosting service.
+          </p>
+        </section>
+        <aside class="use-cases" aria-label="Ways to use Video navigator">
+          <section aria-labelledby="product-demos-title">
+            <h2 id="product-demos-title">Product demos</h2>
+            <p>
+              Show a feature in action, with chapters for the parts reviewers
+              care about.
+            </p>
+          </section>
+          <section aria-labelledby="proof-of-work-title">
+            <h2 id="proof-of-work-title">Proof of work</h2>
+            <p>
+              Keep a recording of what changed, why, and the result beside the
+              issue or PR.
+            </p>
+          </section>
+        </aside>
+        <ol
+          class="setup-steps"
+          aria-label="Create and open a recording"
+          role="list"
+        >
+          <li>
+            <section
+              class="skill-install"
+              aria-labelledby="skill-install-title"
+            >
+              <div class="step-heading">
+                <span class="step-number" aria-hidden="true">1</span>
+                <h2 id="skill-install-title">Teach your agent how</h2>
+              </div>
+              <p class="step-description skill-install-description">
+                Install the skill, then ask your agent to publish a GitHub video
+                with chapters and timestamped agent reasoning.
+              </p>
+              <div class="skill-command-row">
+                <pre
+                  class="skill-command"
+                  tabindex="0"
+                  aria-label="Skill installation command"
+                ><code id="skill-install-command">gh skill install BagToad/github-video-navigator video-navigator --agent github-copilot --scope user</code></pre>
+                <button class="btn" type="button" id="copy-skill-command">
+                  <span data-icon="copy"></span><span>Copy command</span>
+                </button>
+              </div>
+              <div class="skill-install-footer">
+                <a
+                  href="https://github.com/BagToad/github-video-navigator/tree/main/skills/video-navigator"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Read the skill</a
+                >
+                <p
+                  class="helper-text"
+                  id="skill-install-status"
+                  role="status"
+                ></p>
+              </div>
+            </section>
+          </li>
+          <li>
+            <section class="source-section" aria-labelledby="source-title">
+              <div class="step-heading">
+                <span class="step-number" aria-hidden="true">2</span>
+                <h2 id="source-title">Open your recording</h2>
+              </div>
+              <p class="step-description">
+                Paste the issue, pull request, or comment link that contains
+                your video.
+              </p>
+              <form id="source-form" class="source-form">
+                <label for="source-url">GitHub link</label>
+                <div class="source-input-row">
+                  <div class="source-input-wrap">
+                    <span data-icon="link"></span>
+                    <input
+                      class="form-control"
+                      id="source-url"
+                      name="url"
+                      type="url"
+                      placeholder="https://github.com/owner/repo/pull/123"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                      aria-describedby="source-help"
+                      required
+                    />
+                  </div>
+                  <button
+                    class="btn btn-primary open-button"
+                    id="open-video"
+                    type="submit"
+                  >
+                    <span>Open video</span
+                    ><span data-icon="arrow-up-right"></span>
+                  </button>
+                </div>
+                <p id="source-help" class="helper-text">
+                  Public recordings open without signing in. Private
+                  repositories use your existing GitHub access.
+                </p>
+              </form>
+              <details class="access-details" id="access-details">
+                <summary>
+                  <span data-icon="lock"></span>
+                  <span>GitHub access</span>
+                  <span class="access-state" id="access-state">Optional</span>
+                </summary>
+                <div class="access-content">
+                  <p>
+                    A token can raise API limits and read private repositories.
+                    It is sent only to <strong>api.github.com</strong>, held in
+                    memory, and never saved or included in shared links.
+                  </p>
+                  <form id="token-form" autocomplete="off">
+                    <label for="github-token"
+                      >GitHub personal access token</label
+                    >
+                    <div class="token-input-row">
+                      <input
+                        class="form-control"
+                        id="github-token"
+                        type="password"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        data-lpignore="true"
+                        data-1p-ignore
+                        aria-describedby="token-help token-status"
+                        placeholder="Enter a token for this tab"
+                      />
+                      <button class="btn" type="submit">Use token</button>
+                      <button
+                        class="btn"
+                        type="button"
+                        id="clear-token"
+                        disabled
+                      >
+                        Clear token
+                      </button>
+                    </div>
+                  </form>
+                  <p class="helper-text" id="token-help">
+                    Fine-grained tokens need read access to Issues and Pull
+                    requests for the selected repository. Private media may
+                    still require a local copy. Tokens do not bypass video-host
+                    download limits.
+                  </p>
+                  <p class="helper-text" id="token-status" role="status"></p>
+                </div>
+              </details>
+            </section>
+          </li>
+        </ol>
+        <div class="demo-option">
+          <button type="button" class="btn" id="load-demo">
             <span data-icon="player-play"></span><span>Try the demo</span>
           </button>
+          <p>A 40-second walkthrough. No GitHub link needed.</p>
         </div>
-        <div class="empty-explainer">
-          <h2>A little context.<br />A better review.</h2>
-          <p>Open a recording and move straight to the moments that matter.</p>
-          <div class="explanation-item">
-            <span data-icon="list"></span>
-            <div>
-              <h3>Find your place</h3>
-              <p>
-                A table of contents turns a long recording into a few useful
-                stops.
-              </p>
-            </div>
-          </div>
-          <div class="explanation-item">
-            <span data-icon="bolt"></span>
-            <div>
-              <h3>Follow the decisions</h3>
-              <p>
-                Timestamped agent notes stay in step with what you are watching.
-              </p>
-            </div>
-          </div>
-          <p class="demo-caption">
-            The 40-second demo runs entirely from this site.
-          </p>
-        </div>
-      </section>
+      </div>
       <section
         id="workspace"
         class="workspace"

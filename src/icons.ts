@@ -12,7 +12,6 @@ import list from '@tabler/icons/outline/list.svg?raw';
 import lock from '@tabler/icons/outline/lock.svg?raw';
 import moon from '@tabler/icons/outline/moon.svg?raw';
 import play from '@tabler/icons/outline/player-play.svg?raw';
-import skipForward from '@tabler/icons/outline/player-skip-forward.svg?raw';
 import shield from '@tabler/icons/outline/shield-check.svg?raw';
 import sun from '@tabler/icons/outline/sun.svg?raw';
 import upload from '@tabler/icons/outline/upload.svg?raw';
@@ -33,7 +32,6 @@ const icons: Record<string, string> = {
   lock,
   moon,
   'player-play': play,
-  'player-skip-forward': skipForward,
   'shield-check': shield,
   sun,
   upload,

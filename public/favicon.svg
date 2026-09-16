@@ -3,14 +3,11 @@
   width="24"
   height="24"
   viewBox="0 0 24 24"
-  fill="none"
-  stroke="#4493f8"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  class="icon icon-tabler icons-tabler-outline icon-tabler-player-skip-forward"
 >
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M4 5v14l12 -7l-12 -7" />
-  <path d="M20 5l0 14" />
+  <title>Video navigator</title>
+  <g fill="none" stroke="#b16649" stroke-width="2" stroke-linejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="3" />
+    <path d="M14 4v8l2.5-2 2.5 2V4" />
+  </g>
+  <path d="m7 9 5 3-5 3Z" fill="#b16649" />
 </svg>

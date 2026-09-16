@@ -277,6 +277,10 @@ test('a rejected private request can be retried with a token', async ({
   });
   await page.goto(sourceQuery());
   await expect(page.locator('#error-panel')).toContainText('may be private');
+  await expect(page.locator('#landing-view')).toBeVisible();
+  await expect(page.getByLabel('GitHub link', { exact: true })).toHaveValue(
+    SOURCE,
+  );
   await page.getByText('GitHub access', { exact: true }).click();
   await page
     .getByLabel('GitHub personal access token')
@@ -287,6 +291,7 @@ test('a rejected private request can be retried with a token', async ({
     metadata.title ?? '',
   );
   await expect(page.locator('#error-panel')).toBeHidden();
+  await expect(page.getByLabel('GitHub link', { exact: true })).toBeHidden();
 });
 
 test('URL credentials are removed without being used', async ({ page }) => {
@@ -415,7 +420,12 @@ test('a cancelled API response cannot replace a newer recording', async ({
   await expect(
     page.getByRole('button', { name: 'Cancel', exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel('GitHub link', { exact: true })).toBeHidden();
+  await expect(
+    page.getByRole('link', { name: 'Make your own', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.getByLabel('GitHub link', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Try the demo', exact: true }).click();
   release?.();
   await videoReady(page);
@@ -430,10 +440,124 @@ test('browser history restores the prior view', async ({ page }) => {
   await page.getByRole('button', { name: 'Try the demo', exact: true }).click();
   await expect(page.locator('#workspace')).toBeVisible();
   await page.goBack();
-  await expect(page.locator('#empty-state')).toBeVisible();
+  await expect(page.locator('#landing-view')).toBeVisible();
   await expect(page.locator('#workspace')).toBeHidden();
   await page.goForward();
   await expect(page.locator('#workspace')).toBeVisible();
+});
+
+test('the landing page shows the pitch and use cases before its two setup steps', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await expect(page.locator('.setup-steps > li')).toHaveCount(2);
+  await expect(page.locator('.setup-steps h2')).toHaveText([
+    'Teach your agent how',
+    'Open your recording',
+  ]);
+  await expect(page.locator('.intro + .use-cases + .setup-steps')).toHaveCount(
+    1,
+  );
+  const [introBox, casesBox, skillBox, sourceBox] = await Promise.all([
+    page.locator('.intro').boundingBox(),
+    page.locator('.use-cases').boundingBox(),
+    page.locator('.skill-install').boundingBox(),
+    page.locator('.source-section').boundingBox(),
+  ]);
+  if (!introBox || !casesBox || !skillBox || !sourceBox)
+    throw new Error('The pitch, use cases, and setup steps must be visible.');
+  expect(introBox.y + introBox.height).toBeLessThan(casesBox.y);
+  expect(casesBox.y + casesBox.height).toBeLessThan(skillBox.y);
+  expect(skillBox.y + skillBox.height).toBeLessThan(sourceBox.y);
+  await expect(page.locator('#landing-view img')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Try the demo', exact: true }),
+  ).not.toHaveCSS('position', 'absolute');
+  await expect(
+    page.getByRole('link', { name: 'Make your own', exact: true }),
+  ).toBeHidden();
+  await expect(page.locator('.intro')).toContainText(
+    'No separate account, login, or hosting service.',
+  );
+  await expect(
+    page.getByRole('heading', { name: 'Product demos', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Proof of work', exact: true }),
+  ).toBeVisible();
+});
+
+for (const [name, query] of [
+  ['demo', '?demo=1'],
+  ['GitHub', sourceQuery()],
+] as const) {
+  test(`${name} recordings have a focused player without landing-page controls`, async ({
+    page,
+  }) => {
+    await mockSource(page);
+    await page.goto(query);
+    await videoReady(page);
+    await expect(page.locator('#landing-view')).toBeHidden();
+    await expect(page.getByLabel('GitHub link', { exact: true })).toBeHidden();
+    await expect(page.locator('.skill-install')).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: 'Try the demo', exact: true }),
+    ).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.locator('#recording-title')).toBeFocused();
+    await expect(
+      page
+        .locator('.site-header')
+        .getByRole('link', { name: 'Make your own', exact: true }),
+    ).toHaveAttribute('href', './');
+  });
+}
+
+test('Make your own returns to the clean home URL and Back restores the recording', async ({
+  page,
+}) => {
+  await mockSource(page);
+  await page.goto(sourceQuery(12.125));
+  await videoReady(page);
+  const recordingUrl = page.url();
+  const homeUrl = new URL('./', recordingUrl).href;
+  await page.getByRole('link', { name: 'Make your own', exact: true }).click();
+  await expect(page).toHaveURL(homeUrl);
+  await expect(page.locator('#landing-view')).toBeVisible();
+  await expect(page.getByLabel('GitHub link', { exact: true })).toHaveValue('');
+  await expect(page.locator('#workspace')).toBeHidden();
+  await page.goBack();
+  await expect(page).toHaveURL(recordingUrl);
+  await videoReady(page);
+  await expect.poll(() => currentTime(page)).toBeCloseTo(12.125, 2);
+  await expect(page.getByLabel('GitHub link', { exact: true })).toBeHidden();
+});
+
+test('returning home clears the token before opening another recording', async ({
+  page,
+}) => {
+  const authorization: (string | undefined)[] = [];
+  page.on('request', (request) => {
+    if (request.url().startsWith('https://api.github.com/')) {
+      authorization.push(request.headers().authorization);
+    }
+  });
+  await mockSource(page);
+  await page.goto('./');
+  await page.getByText('GitHub access', { exact: true }).click();
+  await page
+    .getByLabel('GitHub personal access token')
+    .fill('example-test-token');
+  await page.getByRole('button', { name: 'Use token', exact: true }).click();
+  await page.getByLabel('GitHub link', { exact: true }).fill(SOURCE);
+  await page.getByRole('button', { name: 'Open video', exact: true }).click();
+  await videoReady(page);
+  await page.getByRole('link', { name: 'Make your own', exact: true }).click();
+  await expect(page.locator('#access-state')).toHaveText('Optional');
+  await page.getByLabel('GitHub link', { exact: true }).fill(SOURCE);
+  await page.getByRole('button', { name: 'Open video', exact: true }).click();
+  await videoReady(page);
+  expect(authorization).toEqual(['Bearer example-test-token', undefined]);
 });
 
 test('follow mode can be paused while browsing notes', async ({ page }) => {
@@ -461,20 +585,205 @@ test('follow mode can be paused while browsing notes', async ({ page }) => {
     .toBeGreaterThan(0);
 });
 
+test('the landing page explains the skill and copies the exact installation command', async ({
+  page,
+}) => {
+  const command =
+    'gh skill install BagToad/github-video-navigator video-navigator --agent github-copilot --scope user';
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (text: string) => {
+          document.documentElement.dataset.copiedCommand = text;
+        },
+      },
+    });
+  });
+  await page.goto('./');
+  await expect(
+    page.getByRole('heading', { name: 'Teach your agent how' }),
+  ).toBeVisible();
+  await expect(page.locator('.skill-install-description')).toContainText(
+    'timestamped agent reasoning',
+  );
+  expect(
+    (await page.locator('#skill-install-command').textContent())?.trim(),
+  ).toBe(command);
+  await page.getByRole('button', { name: 'Copy command', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-copied-command',
+    command,
+  );
+  await expect(page.locator('#skill-install-status')).toHaveText(
+    'Command copied.',
+  );
+  await expect(
+    page.getByRole('link', { name: 'Read the skill', exact: true }),
+  ).toHaveAttribute(
+    'href',
+    'https://github.com/BagToad/github-video-navigator/tree/main/skills/video-navigator',
+  );
+  await page.getByRole('button', { name: 'Try the demo', exact: true }).click();
+  await expect(page.locator('.skill-install')).toBeHidden();
+  await page.goBack();
+  await expect(page.locator('.skill-install')).toBeVisible();
+});
+
+test('a blocked clipboard leaves the install command available for manual copying', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async () => {
+          throw new DOMException(
+            'Clipboard access is blocked.',
+            'NotAllowedError',
+          );
+        },
+      },
+    });
+  });
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Copy command', exact: true }).click();
+  await expect(page.locator('#skill-install-status')).toHaveText(
+    'Automatic copy is unavailable. Select the command and copy it manually.',
+  );
+  await expect(page.locator('#skill-install-command')).toBeVisible();
+});
+
+test('the warm palette follows system and manual theme choices with one shared brand mark', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+  await page.goto('./');
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(250, 249, 246)',
+  );
+  await expect(page.locator('body')).toHaveCSS('color', 'rgb(43, 41, 38)');
+  await expect(page.locator('#open-video')).toHaveCSS(
+    'background-color',
+    'rgb(43, 41, 38)',
+  );
+  const faviconUrl = await page
+    .locator('link[rel="icon"]')
+    .evaluate((link: HTMLLinkElement) => link.href);
+  await expect(page.locator('.brand-mark')).toHaveCSS(
+    'mask-image',
+    `url("${faviconUrl}")`,
+  );
+  const favicon = await page.request.get(faviconUrl);
+  expect(favicon.ok()).toBe(true);
+  expect(await favicon.text()).toContain('<title>Video navigator</title>');
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(32, 31, 29)',
+  );
+  await expect(page.locator('#open-video')).toHaveCSS(
+    'background-color',
+    'rgb(238, 233, 225)',
+  );
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+
+  await page.getByRole('button', { name: /^Theme: system/ }).click();
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(250, 249, 246)',
+  );
+  await page.getByRole('button', { name: /^Theme: light/ }).click();
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(32, 31, 29)',
+  );
+  await expect(page.locator('body')).toHaveCSS('color', 'rgb(238, 233, 225)');
+  await expect(page.locator('#open-video')).toHaveCSS(
+    'background-color',
+    'rgb(238, 233, 225)',
+  );
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(32, 31, 29)',
+  );
+  await page.getByRole('button', { name: /^Theme: dark/ }).click();
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(250, 249, 246)',
+  );
+
+  await page.getByRole('button', { name: 'Try the demo', exact: true }).click();
+  await videoReady(page);
+  for (const [mode, background, accent] of [
+    ['light', 'rgb(241, 238, 232)', 'rgb(151, 72, 47)'],
+    ['dark', 'rgb(41, 39, 36)', 'rgb(216, 149, 117)'],
+  ] as const) {
+    await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
+    await expect(page.locator('.note.is-current')).toHaveCSS(
+      'background-color',
+      background,
+    );
+    await expect(page.locator('.note.is-current .note-time')).toHaveCSS(
+      'color',
+      accent,
+    );
+    await expect(page.locator('.chapter-link[aria-current="true"]')).toHaveCSS(
+      'background-color',
+      background,
+    );
+    expect(
+      await page
+        .locator('.note.is-current')
+        .evaluate((note) => getComputedStyle(note).boxShadow),
+    ).toContain(accent);
+  }
+});
+
+test('error and access controls remain readable in both warm themes', async ({
+  page,
+}) => {
+  await page.route('https://api.github.com/**', async (route) => {
+    await route.fulfill({ status: 404, json: { message: 'Not Found' } });
+  });
+  await page.goto(sourceQuery());
+  await expect(page.locator('#error-panel')).toBeVisible();
+  await page.getByText('GitHub access', { exact: true }).click();
+  for (const mode of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: mode, reducedMotion: 'reduce' });
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
 test('keyboard navigation, dialogs, responsive layout, and both themes remain accessible', async ({
   page,
 }) => {
   await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
   await page.goto('./');
-  let results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
-  expect(results.violations).toEqual([]);
+  for (const mode of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: mode });
+    const landingResults = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+    expect(landingResults.violations).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth,
+      ),
+    ).toBe(false);
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
   await page
     .getByRole('button', { name: 'Metadata guide', exact: true })
     .click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  results = await new AxeBuilder({ page })
+  let results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   expect(results.violations).toEqual([]);

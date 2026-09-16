@@ -1,16 +1,45 @@
 # Video navigator
 
-Watch GitHub recordings with clickable chapters and synchronized agent notes.
-Everything runs in the browser on GitHub Pages.
+Add clickable chapters and synchronized agent notes to the GitHub issues, pull
+requests, and comments you already use. Video navigator enhances those
+conversations instead of replacing them.
+
+GitHub hosts the video, and its metadata stays hidden in the same Markdown body,
+close to the work. Everything runs in the browser on GitHub Pages, with no
+separate account, login, or hosting service. Private recordings use your existing
+GitHub access.
+
+Use it for product demos that reviewers can explore by chapter, or proof of work
+that keeps a recording of changes, decisions, and results beside the issue or PR.
 
 **[Open Video navigator](https://bagtoad.github.io/github-video-navigator/)** |
 **[Try the demo](https://bagtoad.github.io/github-video-navigator/?demo=1)** |
 **[Metadata schema](https://bagtoad.github.io/github-video-navigator/schema/v1.json)**
 
+## Create videos with an agent
+
+> [!TIP]
+> Install the authoring skill to publish GitHub-hosted videos with chapters and
+> timestamped agent reasoning.
+
+```sh
+gh skill install BagToad/github-video-navigator video-navigator --agent github-copilot --scope user
+```
+
+The [video-navigator skill](skills/video-navigator/SKILL.md) uses `gh` with
+`--attach` and includes issue-body, pull-request-body, conversation-comment, and
+review examples. It covers the complete upload, metadata, and navigator-link
+workflow. Choose another supported agent with `--agent`.
+
 ## Open a recording
 
-Paste a GitHub.com issue, pull request, or comment URL. Supported comment links
-include conversation comments (`#issuecomment-123`), inline review comments
+Paste a GitHub.com issue, pull request, or comment URL into the second step on the
+home page. Opening a recording shows a dedicated player without the setup form.
+Use **Make your own** in the player header to return home. Installing the skill
+is not required to watch an existing recording.
+
+Supported comment links include conversation comments (`#issuecomment-123`),
+inline review comments
 (`#discussion_r123` or `/files#r123`), and review bodies (`#pullrequestreview-123`).
 
 For a link without a comment anchor, the navigator checks the body first, then
@@ -165,18 +194,6 @@ Fonts and libraries are served with the site. Source links and timestamps appear
 in the page URL and may be retained in browser history or normal GitHub Pages
 request logs. The page suppresses referrers on outgoing requests.
 
-## Agent skill
-
-Install the authoring skill for GitHub Copilot:
-
-```sh
-gh skill install BagToad/github-video-navigator video-navigator --agent github-copilot --scope user
-```
-
-The [video-navigator skill](skills/video-navigator/SKILL.md) uses `gh` with `--attach`
-for uploads, adds schema-valid metadata, and builds comment-specific navigator
-links. Use `--agent` to select another supported agent.
-
 ## Development
 
 Use Node.js 24 or later.
@@ -204,8 +221,9 @@ npm run preview
 ```
 
 The original 40-second demo is bundled with the site. Regenerate the MP4, poster,
-captions, and favicon with `npm run demo:generate`. This requires FFmpeg and the
-Playwright Chromium browser.
+and captions with `npm run demo:generate`. This requires FFmpeg and the Playwright
+Chromium browser. The generator reads the shared palette from `src/theme.css` and
+the brand mark from `public/favicon.svg`, which also supplies the header logo.
 
 ## Deployment
 
