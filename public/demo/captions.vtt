@@ -1,0 +1,33 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:05.000
+The recording is only part of the story
+A video shows what happened. Chapters and recorded notes make the important moments easier to find.
+
+00:00:05.000 --> 00:00:10.000
+Keep the context beside the work
+The video and its metadata live in the same GitHub body. There is no separate service to keep in sync.
+
+00:00:10.000 --> 00:00:16.000
+Mark useful changes of context
+A chapter starts at a timestamp in seconds. Select any chapter to move the video directly to it.
+
+00:00:16.000 --> 00:00:20.000
+Seeking works in both directions
+Jumping backward restores the earlier chapter and notes. Nothing depends on watching from the beginning.
+
+00:00:20.000 --> 00:00:25.000
+Notes are not a transcript
+Record concise observations, decisions, actions, and results. They provide context that the audio may not contain.
+
+00:00:25.000 --> 00:00:30.000
+Leave room to read
+Turn off Follow playback to browse the notes at your own pace. Turn it back on to return to the current moment.
+
+00:00:30.000 --> 00:00:36.000
+Link to the moment under discussion
+Share includes the GitHub source, the selected video, and an optional start time. It never includes an access token.
+
+00:00:36.000 --> 00:00:40.000
+Ready for another set of eyes
+Anyone with access to the source can open the link and explore the same chapters and notes in their browser.

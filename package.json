@@ -1,0 +1,45 @@
+{
+  "name": "github-video-navigator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chaptered GitHub videos with synchronized agent notes.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "npm run schema && npm run notices && tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "schema": "tsx scripts/generate-schema.ts",
+    "notices": "tsx scripts/generate-notices.ts",
+    "demo:generate": "tsx scripts/generate-demo.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@primer/css": "^22.3.0",
+    "@primer/primitives": "^11.10.0",
+    "@tabler/icons": "^3.46.0",
+    "entities": "^8.1.0",
+    "marked": "^18.0.12",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.13.3",
+    "ajv": "^8.17.1",
+    "lighthouse": "^13.4.1",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.13",
+    "typescript": "~5.9.3",
+    "vite": "~8.2.2",
+    "vitest": "^4.1.11"
+  }
+}

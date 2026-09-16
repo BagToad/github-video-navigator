@@ -1,0 +1,504 @@
+<!doctype html>
+<html
+  lang="en"
+  data-color-mode="auto"
+  data-light-theme="light"
+  data-dark-theme="dark"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com; media-src 'self' blob: https://github.com https://*.githubusercontent.com https://*.s3.amazonaws.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"
+    />
+    <meta
+      name="description"
+      content="Watch GitHub videos with clickable chapters and synchronized agent notes. A browser-only video navigator for issues, pull requests, and comments."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Video navigator</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="./" class="wordmark" aria-label="Video navigator home">
+          <span class="brand-mark" data-icon="player-skip-forward"></span>
+          <span>Video navigator</span>
+        </a>
+        <nav class="header-actions" aria-label="Main navigation">
+          <button class="btn-link header-link" type="button" id="open-guide">
+            <span data-icon="book"></span><span>Metadata guide</span>
+          </button>
+          <a
+            class="header-link repository-link"
+            href="https://github.com/BagToad/github-video-navigator"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span data-icon="brand-github"></span><span>Source</span>
+          </a>
+          <button
+            class="btn icon-button"
+            type="button"
+            id="theme-toggle"
+            aria-label="Theme: system. Switch to light theme"
+            title="Theme: system"
+          >
+            <span data-icon="device-desktop"></span>
+          </button>
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <h1 id="page-title">Watch the work. Follow the why.</h1>
+        <p>
+          GitHub recordings, clickable chapters, and agent decisions that follow
+          along.
+        </p>
+      </section>
+      <section class="source-section" aria-label="Open a GitHub recording">
+        <form id="source-form" class="source-form">
+          <label for="source-url">GitHub link</label>
+          <div class="source-input-row">
+            <div class="source-input-wrap">
+              <span data-icon="link"></span>
+              <input
+                class="form-control"
+                id="source-url"
+                name="url"
+                type="url"
+                placeholder="https://github.com/owner/repo/pull/123"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                aria-describedby="source-help"
+                required
+              />
+            </div>
+            <button
+              class="btn btn-primary open-button"
+              id="open-video"
+              type="submit"
+            >
+              <span>Open video</span><span data-icon="arrow-up-right"></span>
+            </button>
+            <button class="btn" id="cancel-load" type="button" hidden>
+              Cancel
+            </button>
+          </div>
+          <p id="source-help" class="helper-text">
+            Paste an issue, pull request, or comment link. No account required
+            for public recordings.
+          </p>
+        </form>
+        <details class="access-details" id="access-details">
+          <summary>
+            <span data-icon="lock"></span>
+            <span>GitHub access</span>
+            <span class="access-state" id="access-state">Optional</span>
+          </summary>
+          <div class="access-content">
+            <p>
+              A token can raise API limits and read private repositories. It is
+              sent only to <strong>api.github.com</strong>, held in memory, and
+              never saved or included in shared links.
+            </p>
+            <form id="token-form" autocomplete="off">
+              <label for="github-token">GitHub personal access token</label>
+              <div class="token-input-row">
+                <input
+                  class="form-control"
+                  id="github-token"
+                  type="password"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  data-lpignore="true"
+                  data-1p-ignore
+                  aria-describedby="token-help token-status"
+                  placeholder="Enter a token for this tab"
+                />
+                <button class="btn" type="submit">Use token</button>
+                <button class="btn" type="button" id="clear-token" disabled>
+                  Clear token
+                </button>
+              </div>
+            </form>
+            <p class="helper-text" id="token-help">
+              Fine-grained tokens need read access to Issues and Pull requests
+              for the selected repository. Private media may still require a
+              local copy. Tokens do not bypass video-host download limits.
+            </p>
+            <p class="helper-text" id="token-status" role="status"></p>
+          </div>
+        </details>
+      </section>
+      <p id="load-status" class="load-status" role="status"></p>
+      <div
+        id="error-panel"
+        class="notice error-notice"
+        role="alert"
+        hidden
+      ></div>
+      <div id="loading-state" class="loading-state" aria-hidden="true" hidden>
+        <div>
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-video"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+        <div class="skeleton-notes">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-note"></div>
+          <div class="skeleton skeleton-note"></div>
+          <div class="skeleton skeleton-note"></div>
+        </div>
+      </div>
+      <section
+        id="empty-state"
+        class="empty-state"
+        aria-label="Getting started"
+      >
+        <div class="demo-preview">
+          <img
+            src="./demo/poster.webp"
+            width="1280"
+            height="720"
+            alt="The built-in walkthrough shows how chapters and decisions align on a video timeline."
+            fetchpriority="high"
+          />
+          <button type="button" class="btn demo-launch" id="load-demo">
+            <span data-icon="player-play"></span><span>Try the demo</span>
+          </button>
+        </div>
+        <div class="empty-explainer">
+          <h2>A little context.<br />A better review.</h2>
+          <p>Open a recording and move straight to the moments that matter.</p>
+          <div class="explanation-item">
+            <span data-icon="list"></span>
+            <div>
+              <h3>Find your place</h3>
+              <p>
+                A table of contents turns a long recording into a few useful
+                stops.
+              </p>
+            </div>
+          </div>
+          <div class="explanation-item">
+            <span data-icon="bolt"></span>
+            <div>
+              <h3>Follow the decisions</h3>
+              <p>
+                Timestamped agent notes stay in step with what you are watching.
+              </p>
+            </div>
+          </div>
+          <p class="demo-caption">
+            The 40-second demo runs entirely from this site.
+          </p>
+        </div>
+      </section>
+      <section
+        id="workspace"
+        class="workspace"
+        aria-label="Recording workspace"
+        hidden
+      >
+        <div class="recording-heading">
+          <div class="recording-title-wrap">
+            <div class="source-caption">
+              <span data-icon="brand-github"></span>
+              <a id="source-link" target="_blank" rel="noopener noreferrer"></a>
+              <span id="source-author"></span>
+            </div>
+            <h1 id="recording-title" tabindex="-1"></h1>
+          </div>
+          <div class="recording-actions">
+            <span class="Label" id="demo-label" hidden>Demo recording</span>
+            <button class="btn" type="button" id="share-video">
+              <span data-icon="link"></span><span>Share</span>
+            </button>
+          </div>
+        </div>
+        <div class="video-selector" id="video-selector" hidden>
+          <label for="recording-select">Recording</label>
+          <select class="form-select" id="recording-select"></select>
+        </div>
+        <div
+          class="notice metadata-notice"
+          id="metadata-notice"
+          role="status"
+          hidden
+        ></div>
+        <div class="workspace-grid">
+          <div class="viewing-column">
+            <div class="player-shell">
+              <video
+                id="video"
+                controls
+                playsinline
+                preload="metadata"
+                aria-label="GitHub recording"
+              ></video>
+            </div>
+            <div class="playback-bar">
+              <div class="playback-position">
+                <span data-icon="clock"></span>
+                <span class="time-display" id="playback-time">0:00 / 0:00</span>
+                <span class="now-chapter" id="now-chapter"></span>
+              </div>
+              <div class="speed-control">
+                <label for="playback-speed">Speed</label>
+                <select class="form-select" id="playback-speed">
+                  <option value="0.5">0.5x</option>
+                  <option value="0.75">0.75x</option>
+                  <option value="1" selected>1x</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="2">2x</option>
+                </select>
+              </div>
+            </div>
+            <div
+              class="notice error-notice"
+              id="media-error"
+              role="alert"
+              hidden
+            ></div>
+            <details class="media-help" id="media-help">
+              <summary>Having trouble playing this video?</summary>
+              <p>
+                Private attachments, download limits, or an unsupported codec
+                can prevent playback. Open the video on GitHub, download it,
+                then select that same file here. Chapters and notes stay
+                attached.
+              </p>
+              <div class="media-help-actions">
+                <a
+                  class="btn"
+                  id="attachment-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span data-icon="external-link"></span
+                  ><span>Open original</span>
+                </a>
+                <label class="btn file-button" for="local-video">
+                  <span data-icon="upload"></span
+                  ><span>Select local video</span>
+                  <input
+                    id="local-video"
+                    type="file"
+                    accept="video/*,.mp4,.mov,.webm"
+                  />
+                </label>
+                <button class="btn" id="use-original" type="button" hidden>
+                  Use original
+                </button>
+              </div>
+              <p class="helper-text" id="local-status" role="status">
+                Local files stay on your device. They are never uploaded.
+              </p>
+            </details>
+            <nav class="chapters-section" aria-labelledby="chapters-title">
+              <div class="section-heading">
+                <h2 id="chapters-title">
+                  Chapters <span class="count" id="chapter-count"></span>
+                </h2>
+                <span class="section-caption">Jump to a moment</span>
+              </div>
+              <ol id="chapter-list" class="chapter-list"></ol>
+              <p id="chapters-empty" class="empty-copy" hidden>
+                No chapters in this recording. The metadata guide shows how to
+                add them.
+              </p>
+            </nav>
+          </div>
+          <aside class="reasoning-panel" aria-labelledby="reasoning-title">
+            <div class="reasoning-header">
+              <div class="section-heading">
+                <h2 id="reasoning-title">
+                  <span data-icon="bolt"></span>Agent reasoning
+                </h2>
+                <span class="count" id="reasoning-count"></span>
+              </div>
+              <div class="follow-row">
+                <span id="reasoning-position" class="section-caption"
+                  >Ready when you are</span
+                >
+                <label class="follow-control" for="follow-playback">
+                  <input type="checkbox" id="follow-playback" checked />
+                  Follow playback
+                </label>
+              </div>
+            </div>
+            <div
+              class="reasoning-scroll"
+              id="reasoning-scroll"
+              tabindex="0"
+              role="region"
+              aria-label="Timestamped agent notes"
+            >
+              <ol class="reasoning-list" id="reasoning-list"></ol>
+              <div id="reasoning-empty" class="reasoning-empty" hidden>
+                <span data-icon="bolt"></span>
+                <h3>The decisions go here</h3>
+                <p>
+                  This recording has no agent notes. Add timestamped notes in
+                  its metadata to follow them here.
+                </p>
+              </div>
+            </div>
+            <div class="reasoning-footer">
+              Author-provided notes, not an audio transcript.
+            </div>
+            <p class="sr-only" id="note-announcement" role="status"></p>
+          </aside>
+        </div>
+      </section>
+      <noscript>
+        <p class="notice">
+          JavaScript is required to fetch GitHub content and synchronize
+          chapters and notes. All processing happens in your browser.
+        </p>
+      </noscript>
+    </main>
+    <footer class="site-footer">
+      <span
+        ><span data-icon="shield-check"></span>Browser only. No backend. No
+        analytics.</span
+      >
+      <div class="footer-links">
+        <a href="./schema/v1.json" target="_blank" rel="noopener noreferrer"
+          >Metadata schema</a
+        >
+        <a
+          href="./third-party-notices.txt"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Licenses</a
+        >
+      </div>
+    </footer>
+    <dialog
+      id="guide-dialog"
+      class="guide-dialog"
+      aria-labelledby="guide-title"
+    >
+      <div class="dialog-header">
+        <h2 id="guide-title">Add context to a recording</h2>
+        <button
+          class="btn icon-button"
+          type="button"
+          data-close-dialog
+          aria-label="Close metadata guide"
+        >
+          <span data-icon="x"></span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p>
+          Upload a video to a GitHub issue, pull request, or comment. Put a
+          <code>video-navigator</code> HTML comment below its URL.
+        </p>
+        <p>
+          The JSON inside the comment names the same video and supplies
+          timestamps in seconds. GitHub hides the comment; Video navigator reads
+          it from the raw Markdown.
+        </p>
+        <div class="code-heading">
+          <h3>Example Markdown</h3>
+          <button class="btn btn-sm" type="button" id="copy-example">
+            <span data-icon="copy"></span>Copy example
+          </button>
+        </div>
+        <pre
+          class="metadata-example"
+          tabindex="0"
+          aria-label="Metadata example"
+        ><code id="metadata-example"></code></pre>
+        <p id="example-status" class="helper-text" role="status"></p>
+        <h3>Link directly to a recording</h3>
+        <p>
+          Use <code>?url=ENCODED_GITHUB_LINK</code>. Add
+          <code>&amp;t=12.5</code> for a timestamp or
+          <code>&amp;video=2</code> for the second video in the same body. The
+          Share button builds these links for you.
+        </p>
+        <h3>A few useful rules</h3>
+        <ul class="guide-list">
+          <li>
+            Each video has one metadata block. Its <code>video</code> URL must
+            match a visible video in the same body.
+          </li>
+          <li>
+            Chapter timestamps increase strictly. Notes are ordered by time;
+            notes at the same time appear together.
+          </li>
+          <li>
+            Notes stay current until the next timestamp, including when you seek
+            backward.
+          </li>
+          <li>
+            Titles, descriptions, and notes are plain text, not executable HTML
+            or Markdown.
+          </li>
+          <li>
+            With a body link, the first video-containing body or comment is
+            opened. Use a comment permalink to choose another.
+          </li>
+          <li>
+            Private access uses an optional in-memory token. Media playback
+            depends on the browser's GitHub access, not the API token.
+          </li>
+        </ul>
+        <p>
+          <a href="./schema/v1.json" target="_blank" rel="noopener noreferrer"
+            >View the version 1 JSON schema</a
+          >
+        </p>
+      </div>
+    </dialog>
+    <dialog
+      id="share-dialog"
+      class="share-dialog"
+      aria-labelledby="share-title"
+    >
+      <div class="dialog-header">
+        <h2 id="share-title">Share this recording</h2>
+        <button
+          class="btn icon-button"
+          type="button"
+          data-close-dialog
+          aria-label="Close sharing"
+        >
+          <span data-icon="x"></span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <label class="share-time-label" for="share-timestamp"
+          ><input type="checkbox" id="share-timestamp" checked /><span
+            id="share-time-label"
+            >Start at 0:00</span
+          ></label
+        >
+        <label for="share-url">Navigator link</label>
+        <input class="form-control" id="share-url" type="text" readonly />
+        <p class="helper-text">
+          No token is included. Viewers need their own access to private
+          content. A local video selection is not shared.
+        </p>
+        <button class="btn btn-primary" type="button" id="copy-share">
+          <span data-icon="copy"></span>Copy link
+        </button>
+        <p id="share-status" class="helper-text" role="status"></p>
+      </div>
+    </dialog>
+  </body>
+</html>

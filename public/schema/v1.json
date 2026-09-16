@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://bagtoad.github.io/github-video-navigator/schema/v1.json"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "video": {
+      "type": "string",
+      "maxLength": 4096,
+      "pattern": "^https:\\/\\/(?:github\\.com\\/(?:user-attachments\\/assets\\/[a-fA-F0-9-]{36}|[a-zA-Z0-9_.-]+\\/[a-zA-Z0-9_.-]+\\/assets\\/\\d+\\/[a-fA-F0-9-]{36})|(?:user-images|private-user-images|raw)\\.githubusercontent\\.com\\/[^\\s?#]+\\.(?:[mM][pP]4|[mM][oO][vV]|[wW][eE][bB][mM]))(?:\\?[^\\s#]*)?$",
+      "description": "The exact HTTPS GitHub video URL also present in the visible Markdown."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180,
+      "pattern": "\\S"
+    },
+    "chapters": {
+      "maxItems": 500,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 604800,
+            "description": "Seconds from the start of the video. Fractional seconds are supported."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "at",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Chapters in strictly increasing timestamp order. May be empty."
+    },
+    "reasoning": {
+      "maxItems": 2000,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 604800,
+            "description": "Seconds from the start of the video. Fractional seconds are supported."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "observation",
+              "decision",
+              "action",
+              "result"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180,
+            "pattern": "\\S"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000,
+            "pattern": "\\S"
+          },
+          "agent": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "at",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Author-provided notes in nondecreasing timestamp order. Notes at the same time are shown together and remain current until the next timestamp."
+    }
+  },
+  "required": [
+    "version",
+    "video",
+    "chapters",
+    "reasoning"
+  ],
+  "additionalProperties": false,
+  "$id": "https://bagtoad.github.io/github-video-navigator/schema/v1.json",
+  "title": "Video navigator metadata v1"
+}
